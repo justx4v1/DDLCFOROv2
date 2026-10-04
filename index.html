@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club de Literatura - Foro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --pink-light: #ffdceb;
+            --pink-main: #ff9cce;
+            --pink-dark: #e87ba9;
+            --text-dark: #5c3a49;
+            --bg-color: #fff4f9;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--pink-light) 2px, transparent 2px);
+            background-size: 30px 30px;
+            color: var(--text-dark);
+            overflow-x: hidden;
+            transition: filter 0.2s, background-color 0.2s;
+        }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(100px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-3px, 3px) skewX(2deg) }
+            40% { transform: translate(-3px, -3px) skewX(-2deg) }
+            60% { transform: translate(3px, 3px) skewX(2deg) }
+            80% { transform: translate(3px, -3px) skewX(-2deg) }
+            100% { transform: translate(0) }
+        }
+
+        /* EFECTO GLITCH SEVERO CUANDO BORRAN A MONIKA */
+        .heavy-glitch {
+            animation: glitch 0.05s infinite !important;
+            filter: invert(100%) contrast(200%) hue-rotate(90deg) !important;
+            background-color: black !important;
+            background-image: none !important;
+        }
+        
+        .heavy-glitch header h1 {
+            color: red !important;
+            text-shadow: 5px 5px 0px yellow, -5px -5px 0px blue !important;
+            animation: glitch 0.1s infinite alternate-reverse;
+        }
+
+        header {
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(to bottom, rgba(255,156,206,0.8), rgba(255,244,249,1)), 
+                        url('https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?q=80&w=2000&auto=format&fit=crop') center/cover;
+            padding: 20px;
+            border-bottom: 5px solid var(--pink-main);
+        }
+
+        header h1 {
+            font-size: 4rem;
+            color: white;
+            text-shadow: 2px 2px 4px var(--pink-dark);
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        header p {
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            background: var(--glass-bg);
+            padding: 10px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: -50px auto 50px auto;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        /* CARPETA DE WINDOWS CLÁSICO */
+        .windows-folder {
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            margin-bottom: 30px;
+            font-family: 'MS Sans Serif', 'Segoe UI', sans-serif;
+            position: relative;
+            z-index: 10;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .win-title-bar {
+            background: #000080;
+            color: white;
+            padding: 3px 5px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .win-content {
+            background: #ffffff;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            margin: 5px;
+            min-height: 120px;
+        }
+
+        .win-file {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            text-align: center;
+            font-size: 12px;
+            color: black;
+            user-select: none;
+            padding: 5px;
+        }
+
+        .win-file:hover, .win-file.selected {
+            background: rgba(0, 0, 128, 0.1);
+            outline: 1px dotted #000080;
+        }
+
+        .win-file img {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 5px;
+            image-rendering: pixelated;
+        }
+
+        /* VENTANA MODAL (MENÚ DE BORRADO) */
+        #delete-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            padding: 2px;
+            z-index: 9999;
+            font-family: 'MS Sans Serif', 'Segoe UI', sans-serif;
+            width: 300px;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            padding: 20px;
+            text-align: center;
+            color: black;
+            font-size: 14px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .modal-buttons button:active {
+            border-top: 2px solid #000000;
+            border-left: 2px solid #000000;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+        }
+
+        .forum-section { display: flex; flex-direction: column; gap: 20px; }
+        .post-form { background: var(--glass-bg); padding: 25px; border-radius: 15px; border: 2px solid var(--pink-main); }
+        .post-form input, .post-form textarea { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid var(--pink-light); border-radius: 10px; font-size: 1rem; }
+        .btn-submit { background-color: var(--pink-main); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
+        .post { background: white; padding: 20px; border-radius: 15px; border-left: 5px solid var(--pink-main); margin-bottom: 15px; }
+        .post-header { display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px dashed var(--pink-light); padding-bottom: 10px; }
+        .post-avatar { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; }
+        .post-author { font-weight: 900; font-size: 1.2rem; color: var(--pink-dark); }
+        
+        .sidebar { display: flex; flex-direction: column; gap: 15px; }
+        .member-card { background: white; border-radius: 15px; overflow: hidden; text-align: center; }
+        .member-card img { width: 100%; height: 150px; object-fit: cover; }
+        .member-card h3 { padding: 10px; background: var(--pink-light); }
+
+        .hidden-secret { color: var(--bg-color); font-size: 10px; user-select: none; cursor: default; text-align: center; opacity: 0.1; }
+    </style>
+</head>
+<body>
+
+    <!-- MENÚ EMERGENTE ESTILO WINDOWS -->
+    <div id="delete-modal">
+        <div class="win-title-bar">
+            <span>Confirmar eliminación</span>
+            <div style="background: #c0c0c0; color: black; border: 1px solid #fff; border-right-color: #000; border-bottom-color: #000; padding: 0 4px; cursor:pointer;" onclick="closeModal()">X</div>
+        </div>
+        <div class="modal-content">
+            <p id="modal-text">¿Estás seguro de que deseas enviar este archivo a la Papelera de reciclaje?</p>
+            <div class="modal-buttons">
+                <button id="btn-borrar">Borrar</button>
+                <button id="btn-cancelar" onclick="closeModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <h1>Doki Doki Literature Club</h1>
+        <p>¿Compartirás tu poema con el club hoy?</p>
+    </header>
+
+    <div class="container">
+        <main class="forum-section">
+            
+            <div class="windows-folder">
+                <div class="win-title-bar">
+                    <span>C:\Program Files\DDLC\characters</span>
+                </div>
+                <div class="win-content">
+                    <div class="win-file" data-filename="Monika.chr">
+                        <img src="https://placehold.co/40x40/ffffff/000000?text=📄" alt="file">
+                        <span>Monika.chr</span>
+                    </div>
+                    <div class="win-file" data-filename="Natsuki.chr">
+                        <img src="https://placehold.co/40x40/ffffff/000000?text=📄" alt="file">
+                        <span>Natsuki.chr</span>
+                    </div>
+                    <div class="win-file" data-filename="Sayori.chr">
+                        <img src="https://placehold.co/40x40/ffffff/000000?text=📄" alt="file">
+                        <span>Sayori.chr</span>
+                    </div>
+                    <div class="win-file" data-filename="Yuri.chr">
+                        <img src="https://placehold.co/40x40/ffffff/000000?text=📄" alt="file">
+                        <span>Yuri.chr</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post-form">
+                <input type="text" id="username" placeholder="Tu nombre (Ej: justx4v1)" required>
+                <textarea id="message" rows="4" placeholder="Escribe tu poema o mensaje aquí..." required></textarea>
+                <button class="btn-submit" id="btn-send">Escribir Poema</button>
+            </div>
+
+            <div id="posts-container">
+                <div class="post">
+                    <div class="post-header">
+                        <img src="https://placehold.co/50x50/ff9cce/ffffff?text=M" alt="Avatar" class="post-avatar">
+                        <span class="post-author">Monika</span>
+                    </div>
+                    <div class="post-content">A veces pienso que hay alguien más mirándonos...</div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <div class="member-card">
+                <img src="https://placehold.co/300x150/ff9cce/ffffff?text=Monika" alt="Monika">
+                <h3>Monika</h3>
+            </div>
+            <div class="member-card">
+                <img src="https://placehold.co/300x150/ff9cce/ffffff?text=Sayori" alt="Sayori">
+                <h3>Sayori</h3>
+            </div>
+            <div class="member-card">
+                <img src="https://placehold.co/300x150/ff9cce/ffffff?text=Yuri" alt="Yuri">
+                <h3>Yuri</h3>
+            </div>
+            <div class="member-card">
+                <img src="https://placehold.co/300x150/ff9cce/ffffff?text=Natsuki" alt="Natsuki">
+                <h3>Natsuki</h3>
+            </div>
+        </aside>
+    </div>
+
+    <div class="hidden-secret">JULIJULIANXD673 ES TOMÁS</div>
+
+    <script>
+        // --- LOGICA DE POSTS ESTATICOS ---
+        const btnSend = document.getElementById('btn-send');
+        const postsContainer = document.getElementById('posts-container');
+        const usernameInput = document.getElementById('username');
+        const messageInput = document.getElementById('message');
+
+        btnSend.addEventListener('click', () => {
+            const nombre = usernameInput.value.trim();
+            const mensaje = messageInput.value.trim();
+            if (nombre === "" || mensaje === "") return;
+
+            const postElement = document.createElement('div');
+            postElement.classList.add('post');
+            const letra = nombre.charAt(0).toUpperCase();
+            
+            postElement.innerHTML = `
+                <div class="post-header">
+                    <img src="https://placehold.co/50x50/ff9cce/ffffff?text=${letra}" alt="Avatar" class="post-avatar">
+                    <span class="post-author">${nombre}</span>
+                </div>
+                <div class="post-content">${mensaje}</div>
+            `;
+            postsContainer.prepend(postElement);
+            messageInput.value = '';
+        });
+
+        // --- LOGICA DE CARPETA Y DOBLE CLICK ---
+        let currentFileElement = null;
+        const deleteModal = document.getElementById('delete-modal');
+        const modalText = document.getElementById('modal-text');
+        const btnBorrar = document.getElementById('btn-borrar');
+
+        // Detectar doble click en los archivos
+        document.querySelectorAll('.win-file').forEach(file => {
+            file.addEventListener('dblclick', (e) => {
+                currentFileElement = e.currentTarget;
+                const fileName = currentFileElement.getAttribute('data-filename');
+                
+                modalText.innerText = `¿Estás seguro de que deseas eliminar permanentemente el archivo '${fileName}'?`;
+                deleteModal.style.display = 'block';
+            });
+        });
+
+        function closeModal() {
+            deleteModal.style.display = 'none';
+            currentFileElement = null;
+        }
+
+        // Lógica al presionar "Borrar"
+        btnBorrar.addEventListener('click', () => {
+            if (currentFileElement) {
+                const fileName = currentFileElement.getAttribute('data-filename');
+                
+                // Desaparecer el archivo de la carpeta
+                currentFileElement.style.display = 'none';
+                
+                // Cerrar el modal
+                closeModal();
+
+                // Verificar si el archivo borrado es Monika
+                if (fileName === 'Monika.chr') {
+                    triggerMonikaGlitch();
+                }
+            }
+        });
+
+        function triggerMonikaGlitch() {
+            // Aplicar clase severa que invierte colores y tiembla de forma agresiva
+            document.body.classList.add('heavy-glitch');
+            
+            // Cambiar textos al azar en la página
+            const headings = document.querySelectorAll('h1, h3, .post-content, .win-title-bar span');
+            setInterval(() => {
+                headings.forEach(el => {
+                    if (Math.random() > 0.5) {
+                        el.innerText = "J U S T  M O N I K A";
+                    }
+                });
+            }, 500);
+        }
+    </script>
+</body>
+</html>
